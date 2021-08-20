@@ -172,6 +172,9 @@ longcheck: ecm$(EXEEXT)
 	$(srcdir)/test.ecm "$(VALGRIND) ./ecm$(EXEEXT) -redc"
 	$(srcdir)/test.ecm "$(VALGRIND) ./ecm$(EXEEXT) -mpzmod"
 	$(srcdir)/test.ecm "$(VALGRIND) ./ecm$(EXEEXT) -treefile tree"
+if WANT_CGBN
+	$(srcdir)/test.gpuecm "$(VALGRIND) ./ecm$(EXEEXT) -cgbn"
+endif
 	$(srcdir)/testlong.pp1 "$(VALGRIND) ./ecm$(EXEEXT)"
 	$(srcdir)/testlong.pm1 "$(VALGRIND) ./ecm$(EXEEXT)"
 	$(srcdir)/testlong.ecm "$(VALGRIND) ./ecm$(EXEEXT)"
