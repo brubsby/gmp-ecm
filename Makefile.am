@@ -147,9 +147,14 @@ dist_check_SCRIPTS = test.pp1 test.pm1 test.ecm
 if WANT_GPU
 dist_check_SCRIPTS += test.gpuecm
 endif
+if WANT_CGBN
+dist_check_SCRIPTS += test.cgbnecm
+endif
 
 TESTS = $(dist_check_SCRIPTS)
 TESTS_ENVIRONMENT = $(VALGRIND)
+
+
 
 # see https://www.gnu.org/software/automake/manual/html_node/Scripts_002dbased-Testsuites.html
 # this is only needed for "make longcheck" below
@@ -172,8 +177,11 @@ longcheck: ecm$(EXEEXT)
 	$(srcdir)/test.ecm "$(VALGRIND) ./ecm$(EXEEXT) -redc"
 	$(srcdir)/test.ecm "$(VALGRIND) ./ecm$(EXEEXT) -mpzmod"
 	$(srcdir)/test.ecm "$(VALGRIND) ./ecm$(EXEEXT) -treefile tree"
+if WANT_GPU
+	$(srcdir)/test.gpuecm "$(VALGRIND) ./ecm$(EXEEXT)"
+endif
 if WANT_CGBN
-	$(srcdir)/test.gpuecm "$(VALGRIND) ./ecm$(EXEEXT) -cgbn"
+	$(srcdir)/test.cgbnecm "$(VALGRIND) ./ecm$(EXEEXT)"
 endif
 	$(srcdir)/testlong.pp1 "$(VALGRIND) ./ecm$(EXEEXT)"
 	$(srcdir)/testlong.pm1 "$(VALGRIND) ./ecm$(EXEEXT)"
