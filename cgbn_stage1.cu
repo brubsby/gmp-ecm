@@ -641,36 +641,32 @@ int cgbn_ecm_stage1(mpz_t *factors, int *array_stage_found,
    */
   typedef cgbn_params_t<4, 512>   cgbn_params_512;
   typedef cgbn_params_t<8, 1024>  cgbn_params_1024;
+  std::vector<uint32_t> available_kernels;
+  available_kernels.push_back((uint32_t)cgbn_params_512::BITS);
+  available_kernels.push_back((uint32_t)cgbn_params_1024::BITS);
+
 #ifndef IS_DEV_BUILD
   /**
    * TPI and BITS have to be set at compile time. Adding multiple cgbn_params
-   * (and their associated kernels) allows for dynamic selection based on the
-   * size of N (e.g. N < 1024, N < 2048, N < 4096) but increase compile time
-   * and binary time. A few reasonable sizes are included and a verbose warning
-   * on when a particurar N might benefit from a custom kernel size.
+   * (and their associated kernels) allows for better dynamic selection based
+   * on the size of N (e.g. N < 1024, N < 2048, N < 4096) but increase compile
+   * time and binary size. A few reasonable sizes are included and a verbose
+   * warning on when N might benefit from a custom kernel size.
    */
   typedef cgbn_params_t<8, 1536>  cgbn_params_1536;
   typedef cgbn_params_t<8, 2048>  cgbn_params_2048;
   typedef cgbn_params_t<16, 3072> cgbn_params_3072;
   typedef cgbn_params_t<16, 4096> cgbn_params_4096;
+  available_kernels.push_back((uint32_t)cgbn_params_1536::BITS);
+  available_kernels.push_back((uint32_t)cgbn_params_2048::BITS);
+  available_kernels.push_back((uint32_t)cgbn_params_3072::BITS);
+  available_kernels.push_back((uint32_t)cgbn_params_4096::BITS);
 #endif
-
-  const std::vector<uint32_t> available_kernels = {
-      cgbn_params_512::BITS,
-      cgbn_params_1024::BITS
-#ifndef IS_DEV_BUILD
-      ,
-      cgbn_params_1536::BITS,
-      cgbn_params_2048::BITS,
-      cgbn_params_3072::BITS
-      cgbn_params_4096::BITS
-#endif
-  };
 
   size_t n_log2 = mpz_sizeinbase(N, 2);
   for (int k_i = 0; k_i < available_kernels.size(); k_i++) {
     uint32_t kernel_bits = available_kernels[k_i];
-    if (kernel_bits >= n_log2 + 6) {
+    if (kernel_bits >= n_log2 + CARRY_BITS) {
       BITS = kernel_bits;
       assert( BITS % 32 == 0 );
       TPI = (BITS <= 512) ? 4 : (BITS <= 2048) ? 8 : (BITS <= 8192) ? 16 : 32;
