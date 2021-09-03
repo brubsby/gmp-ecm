@@ -123,7 +123,8 @@ void from_mpz(const mpz_t s, uint32_t *x, uint32_t count) {
 //   TPI             - threads per instance
 //   BITS            - number of bits per instance
 
-const uint32_t TPB_DEFAULT = 128;
+/* TODO test how this changes gpu_throughput_test */
+const uint32_t TPB_DEFAULT = 256;
 
 template<uint32_t tpi, uint32_t bits>
 class cgbn_params_t {
@@ -733,11 +734,11 @@ int cgbn_ecm_stage1(mpz_t *factors, int *array_stage_found,
     /* decrease batch_size for final batch if needed */
     batch_size = std::min(s_num_bits - s_partial, batch_size);
 
-    /* print ETA with lessing frequently */
-    if ((batches_complete < 10) ||
-        (batches_complete < 100 && batches_complete % 10 == 0) ||
-        (batches_complete < 1000 && batches_complete % 100 == 0) ||
-        ((s_num_bits / batch_size < 200000) && (batches_complete % 1000 == 0)) ||
+    /* print ETA with lessing frequently, 8 early + 50@1/100s + N@1/1000s */
+    if ((batches_complete < 3) ||
+        (batches_complete < 30 && batches_complete % 10 == 0) ||
+        (batches_complete < 500 && batches_complete % 100 == 0) ||
+        (batches_complete < 5000 && batches_complete % 1000 == 0) ||
         (batches_complete % 10000 == 0)) {
       outputf (OUTPUT_VERBOSE, "Computing %d bits/call, %d/%d (%.1f%%)",
           batch_size, s_partial, s_num_bits, 100.0 * s_partial / s_num_bits);
