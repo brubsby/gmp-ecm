@@ -402,9 +402,8 @@ __global__ void kernel_double_add(
   cgbn_monitor_t monitor = CHECK_ERROR ? cgbn_report_monitor : cgbn_no_checks;
 
   curve_t<params> curve(monitor, report, instance_i);
-  typename curve_t<params>::bn_t  aX, aY, bX, bY, modulus;
+  typename curve_t<params>::bn_t  aX, aY, bX, bY, modulus, temp;
 
-  uint32_t np0;
   { // Setup
       cgbn_load(curve._env, modulus, &data_cast[5*instance_i+0]);
       cgbn_load(curve._env, aX, &data_cast[5*instance_i+1]);
@@ -433,15 +432,28 @@ __global__ void kernel_double_add(
   for (int b = 0; b < s_bits_interval; b++) {
     if (gpu_s_bits[s_bits_start + b] != swapped) {
         swapped = !swapped;
-        cgbn_swap(curve._env, aX, bX);
-        cgbn_swap(curve._env, aY, bY);
+        /* Replace with cgbn_swap after https://github.com/NVlabs/CGBN/pull/17 is pulled */
+        //cgbn_swap(curve._env, aX, bX);
+        //cgbn_swap(curve._env, aY, bY);
+        cgbn_set(curve._env, temp, aX);
+        cgbn_set(curve._env, aX, bX);
+        cgbn_set(curve._env, bX, temp);
+        cgbn_set(curve._env, temp, aY);
+        cgbn_set(curve._env, aY, bY);
+        cgbn_set(curve._env, bY, temp);
     }
     curve.double_add_v2(aX, aY, bX, bY, d, modulus, np0);
   }
 
   if (swapped) {
-    cgbn_swap(curve._env, aX, bX);
-    cgbn_swap(curve._env, aY, bY);
+    //cgbn_swap(curve._env, aX, bX);
+    //cgbn_swap(curve._env, aY, bY);
+    cgbn_set(curve._env, temp, aX);
+    cgbn_set(curve._env, aX, bX);
+    cgbn_set(curve._env, bX, temp);
+    cgbn_set(curve._env, temp, aY);
+    cgbn_set(curve._env, aY, bY);
+    cgbn_set(curve._env, bY, temp);
   }
 
   { // Final output
