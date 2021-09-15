@@ -672,7 +672,7 @@ int cgbn_ecm_stage1(mpz_t *factors, int *array_stage_found,
   std::vector<uint32_t> available_kernels;
 
   typedef cgbn_params_t<4, 512>   cgbn_params_512;
-  typedef cgbn_params_t<32, 5632>  cgbn_params_1024;
+  typedef cgbn_params_t<32, 5568>  cgbn_params_1024;
   available_kernels.push_back((uint32_t)cgbn_params_512::BITS);
   available_kernels.push_back((uint32_t)cgbn_params_1024::BITS);
 
@@ -771,8 +771,9 @@ int cgbn_ecm_stage1(mpz_t *factors, int *array_stage_found,
   CUDA_CHECK(cudaMalloc((void **)&gpu_data, data_size));
   CUDA_CHECK(cudaMemcpy(gpu_data, data, data_size, cudaMemcpyHostToDevice));
 
-  outputf (OUTPUT_VERBOSE, "CGBN<%d, %d> running kernel<%d block x %d threads>\n",
-          BITS, TPI, BLOCK_COUNT, TPB);
+  outputf (OUTPUT_VERBOSE,
+          "CGBN<%d, %d> running kernel<%d block x %d threads> input number is %d bits\n",
+          BITS, TPI, BLOCK_COUNT, TPB, mpz_sizeinbase (N, 2));
 
   /* Break s_num_bits into smaller chunks */
   int s_partial = 0;
