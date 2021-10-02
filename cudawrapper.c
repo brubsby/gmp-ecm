@@ -428,10 +428,11 @@ gpu_ecm (mpz_t f, mpz_t x, int param, mpz_t firstsigma, mpz_t n, mpz_t go,
 
 
   /* Check that N is not too big */
-  if (mpz_sizeinbase (n, 2) > ECM_GPU_MAX_BITS-6)
+  size_t max_bits = (use_cgbn ? ECM_GPU_CGBN_MAX_BITS : ECM_GPU_MAX_BITS) - 6;
+  if (mpz_sizeinbase (n, 2) > max_bits)
     {
       outputf (OUTPUT_ERROR, "GPU: Error, input number should be stricly lower"
-                             " than 2^%d\n", ECM_GPU_MAX_BITS-6);
+                             " than 2^%d\n", max_bits);
       return ECM_ERROR;
     }
 
@@ -598,15 +599,16 @@ gpu_ecm (mpz_t f, mpz_t x, int param, mpz_t firstsigma, mpz_t n, mpz_t go,
   
   st = cputime ();
 
-#ifdef HAVE_CGBN_H
   if (use_cgbn) {
-    youpi = cgbn_ecm_stage1 (factors, array_found, n, batch_s, *nb_curves,
+#ifdef HAVE_CGBN_H
+    youpi = cgbn_ecm_stage1 (factors, array_stage_found, n, batch_s, *nb_curves,
                              firstsigma_ui, &gputime, verbose);
-  } else {
 #else
-  {
+    outputf (OUTPUT_ERROR, "cgbn not included");
+    return ECM_ERROR;
 #endif /* HAVE_CGBN_H */
-    youpi = gpu_ecm_stage1 (factors, array_found, n, batch_s, *nb_curves,
+  }  else {
+    youpi = gpu_ecm_stage1 (factors, array_stage_found, n, batch_s, *nb_curves,
                             firstsigma_ui, &gputime, verbose);
   }
 
