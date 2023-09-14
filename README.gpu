@@ -27,6 +27,13 @@ To enable only a single compute capability you can set '--enable-gpu=XX'
 
   $ ./configure --enable-gpu=61 [other options]
 
+CGBN code is required for GPU builds, follow the instructions above and add
+"-with-cgbn-include" argument to point at the CGBN include directory generally
+(../CGBN/include/cgbn). CGBN is a "CUDA Accelerated Multiple Precision
+Arithmetic (Big Num)" library available at https://github.com/NVlabs/CGBN
+
+  $ ./configure --enable-gpu --with-cgbn-include=/PATH/DIR/CGBN/include/cgbn
+
 By default, GMP-ECM will look for cuda.h in the default header directories,
 but you can specify another directory, such as /opt/cuda, with:
 
@@ -78,19 +85,7 @@ For failing kernels some additional information may be present in cuda-memcheck
 
 ##############################################################################
 
-2. How to enable CGBN code in GMP-ECM
-
-By default the CGBN code is not enabled during GPU builds, follow the
-instructions above and add "-with-cgbn-include" argument to point at the
-CGBN include directory (../CGBN/include/cgbn).
-CGBN is a "CUDA Accelerated Multiple Precision Arithmetic (Big Num)" library
-available at https://github.com/NVlabs/CGBN
-
-  $ ./configure --enable-gpu --with-cgbn-include=/PATH/DIR/CGBN/include/cgbn
-
-##############################################################################
-
-3. Basic Usage
+2. Basic Usage
 
 To use your GPU for step 1, just add the -gpu option:
 
@@ -115,7 +110,7 @@ effect on step 1, if the "-gpu" option is activated, but will apply for step 2.
 
 ##############################################################################
 
-4. Advanced Usage
+3. Advanced Usage
 
 The option "-gpudevice n" forces the GPU code to be executed on device n. Nvidia
 tool "nvidia-smi" can be used to know to which number is associated a GPU.
@@ -139,7 +134,7 @@ compile time and binary size.
 
 ##############################################################################
 
-5. Known issues
+4. Known issues
 
 If you get "Error msg: forward compatibility was attempted on non supported HW"
 or "error: 'cuda.h' and 'cudart' library have different versions", then you
