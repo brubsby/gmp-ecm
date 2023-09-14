@@ -7,7 +7,15 @@ B1=128000
 
 if [[ "$C" -ne "$DEFAULT_CURVES" ]]; then
  echo "Changed DEFAULT_CURVES from $DEFAULT_CURVES to $C"
+ echo
 fi
+
+echo "This script helps find the best \"-gpucurve=<X>\" for your gpu."
+echo "It run $ECM with different multiples of the default ($DEFAULT_CURVES)."
+echo "It runs at 3 levels a 256 bits (C80), 512 (C150), and 1024 bits (C300)."
+echo "The first line is the CPU timing, then the GPU times for different values of \"-gpucurve\""
+#echo "Large values tend to produce better throughput but double the time to get the curves."
+#echo "Using the smallest -gpucurve value within 10% of the best throughput is a good choice."
 
 filtered() {
  echo "$1" | $ECM -v $2 $B1 0 2>&1 | grep -P "CGBN|Step"
