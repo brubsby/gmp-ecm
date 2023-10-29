@@ -685,11 +685,12 @@ int cgbn_ecm_stage1(mpz_t *factors, int *array_found,
   std::vector<uint32_t> available_kernels;
 
   typedef cgbn_params_t<4, 512>   cgbn_params_512;
+  typedef cgbn_params_t<8, 640>   cgbn_params_640;
   typedef cgbn_params_t<8, 1024>  cgbn_params_1024;
   available_kernels.push_back((uint32_t)cgbn_params_512::BITS);
+  available_kernels.push_back((uint32_t)cgbn_params_640::BITS);
   available_kernels.push_back((uint32_t)cgbn_params_1024::BITS);
 
-#ifndef IS_DEV_BUILD
   /**
    * TPI and BITS have to be set at compile time. Adding multiple cgbn_params
    * (and their associated kernels) allows for better dynamic selection based
@@ -706,7 +707,7 @@ int cgbn_ecm_stage1(mpz_t *factors, int *array_found,
   available_kernels.push_back((uint32_t)cgbn_params_2048::BITS);
   available_kernels.push_back((uint32_t)cgbn_params_3072::BITS);
   available_kernels.push_back((uint32_t)cgbn_params_4096::BITS);
-#endif
+
 
   size_t n_log2 = mpz_sizeinbase(N, 2);
   for (int k_i = 0; k_i < available_kernels.size(); k_i++) {
@@ -720,10 +721,12 @@ int cgbn_ecm_stage1(mpz_t *factors, int *array_found,
       if (BITS == cgbn_params_512::BITS) {
         TPI = cgbn_params_512::TPI;
         kernel_info((const void*)kernel_double_add<cgbn_params_512>, verbose);
+      } else if (BITS == cgbn_params_640::BITS) {
+        TPI = cgbn_params_640::TPI;
+        kernel_info((const void*)kernel_double_add<cgbn_params_640>, verbose);
       } else if (BITS == cgbn_params_1024::BITS) {
         TPI = cgbn_params_1024::TPI;
         kernel_info((const void*)kernel_double_add<cgbn_params_1024>, verbose);
-#ifndef IS_DEV_BUILD
       } else if (BITS == cgbn_params_1536::BITS) {
         TPI = cgbn_params_1536::TPI;
         kernel_info((const void*)kernel_double_add<cgbn_params_1536>, verbose);
@@ -736,7 +739,6 @@ int cgbn_ecm_stage1(mpz_t *factors, int *array_found,
       } else if (BITS == cgbn_params_4096::BITS) {
         TPI = cgbn_params_4096::TPI;
         kernel_info((const void*)kernel_double_add<cgbn_params_4096>, verbose);
-#endif
       } else {
         /* lowercase k to help differentiate this error from one below */
         outputf (OUTPUT_ERROR, "CGBN kernel not found for %d bits\n", BITS);
@@ -827,10 +829,12 @@ int cgbn_ecm_stage1(mpz_t *factors, int *array_found,
     if (BITS == cgbn_params_512::BITS) {
       kernel_double_add<cgbn_params_512><<<BLOCK_COUNT, TPB>>>(
           report, s_num_bits, s_partial, batch_size, gpu_s_bits, gpu_data, curves, sigma, np0);
+    } else if (BITS == cgbn_params_640::BITS) {
+      kernel_double_add<cgbn_params_640><<<BLOCK_COUNT, TPB>>>(
+          report, s_num_bits, s_partial, batch_size, gpu_s_bits, gpu_data, curves, sigma, np0);
     } else if (BITS == cgbn_params_1024::BITS) {
       kernel_double_add<cgbn_params_1024><<<BLOCK_COUNT, TPB>>>(
           report, s_num_bits, s_partial, batch_size, gpu_s_bits, gpu_data, curves, sigma, np0);
-#ifndef IS_DEV_BUILD
     } else if (BITS == cgbn_params_1536::BITS) {
       kernel_double_add<cgbn_params_1536><<<BLOCK_COUNT, TPB>>>(
           report, s_num_bits, s_partial, batch_size, gpu_s_bits, gpu_data, curves, sigma, np0);
@@ -843,7 +847,6 @@ int cgbn_ecm_stage1(mpz_t *factors, int *array_found,
     } else if (BITS == cgbn_params_4096::BITS) {
       kernel_double_add<cgbn_params_4096><<<BLOCK_COUNT, TPB>>>(
           report, s_num_bits, s_partial, batch_size, gpu_s_bits, gpu_data, curves, sigma, np0);
-#endif
     } else {
       outputf (OUTPUT_ERROR, "CGBN Kernel not found for %d bits\n", BITS);
       return ECM_ERROR;

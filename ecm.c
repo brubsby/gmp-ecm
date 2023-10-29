@@ -855,6 +855,54 @@ choose_S (mpz_t B2len)
 #define DIGITS_END   80
 
 void
+print_expwork (double B1, const mpz_t B2, unsigned long dF, unsigned long k, 
+                 int S, int param, unsigned int curves)
+{
+  double l = 0;
+  double r = 100;
+  double m, prob, smoothness_correction, test_curves;
+  double lastm = -1;
+
+  if (param == ECM_PARAM_SUYAMA || param == ECM_PARAM_BATCH_2)
+      smoothness_correction = 1.0; 
+  else if (param == ECM_PARAM_BATCH_SQUARE)
+      smoothness_correction = EXTRA_SMOOTHNESS_SQUARE;
+  else if (param == ECM_PARAM_BATCH_32BITS_D)
+      smoothness_correction = EXTRA_SMOOTHNESS_32BITS_D;
+  else /* This case should never happen */
+      smoothness_correction = 0.0; 
+
+  while (l < r) {
+    m = (l + r) / 2.;
+    if (m == lastm)
+    {
+      break;
+    }
+    prob = ecmprob (B1, mpz_get_d (B2),
+                    /* smoothness depends on the parametrization */
+                    pow (10., m - .5) / smoothness_correction,
+                    (double) dF * dF * k, S);
+    test_curves = 1. / prob;
+
+    if (fabs(test_curves - curves) < .5)
+    {
+      break;
+    }
+    else if (test_curves < curves)
+    {
+      l = m;
+      lastm = m;
+    }
+    else
+    {
+      r = m;
+      lastm = m;
+    }
+  }
+  outputf (OUTPUT_VERBOSE, "Expected digit-length of factor found after %d curves:\n%.5f\n", curves, m);
+}
+
+void
 print_expcurves (double B1, const mpz_t B2, unsigned long dF, unsigned long k, 
                  int S, int param)
 {
@@ -1410,6 +1458,7 @@ ecm (mpz_t f, mpz_t x, mpz_t y, int param, mpz_t sigma, mpz_t n, mpz_t go,
         {
           rhoinit (256, 10);
           print_expcurves (B1, B2, dF, k, root_params.S, param);
+          print_expwork (B1, B2, dF, k, root_params.S, param, 8192);
         }
     }
 

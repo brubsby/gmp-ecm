@@ -492,7 +492,7 @@ AS_IF([test "x$enable_gpu" = "xyes" ],
         AS_CASE(["$host_os"], [*"linux"*], [ LDFLAGS="-Wl,-rpath,$cuda_lib $LDFLAGS" ])
         CUDARPATH="-R $cuda_lib"
       ])
-    AC_CHECK_LIB([cuda], [cuInit], [], [AC_MSG_ERROR([Couldn't find CUDA lib])])
+    #AC_CHECK_LIB([cuda], [cuInit], [], [AC_MSG_ERROR([Couldn't find CUDA lib])])
     LIBS="$CUDALIB $LIBS"
     AC_MSG_CHECKING([that CUDA Toolkit version and runtime version are the same])
     AC_RUN_IFELSE([AC_LANG_PROGRAM([
